@@ -71,13 +71,13 @@ export default function Destinations() {
 
           <div className="flex flex-wrap gap-4 items-center w-full md:w-auto">
             {/* Region Filter */}
-            <div className="flex gap-1.5 items-center bg-white/5 border border-white/10 p-1 rounded-xl backdrop-blur-md overflow-x-auto max-w-full no-scrollbar">
-              <Filter className="w-4 h-4 text-slate-400 ml-2 flex-shrink-0" />
+            <div className="flex gap-1.5 items-center bg-white/5 border border-white/10 p-1 rounded-xl backdrop-blur-md">
+              <Filter className="w-4 h-4 text-slate-400 ml-2" />
               {regions.map((r) => (
                 <button
                   key={r}
                   onClick={() => setActiveRegion(r)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-300 whitespace-nowrap flex-shrink-0 cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-300"
                   style={{
                     background: activeRegion === r ? theme.primary : 'transparent',
                     color: activeRegion === r ? '#03070d' : '#cbd5e1',

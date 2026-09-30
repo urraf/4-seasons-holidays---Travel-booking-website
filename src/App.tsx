@@ -48,7 +48,7 @@ function AnimatedRoutes() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.15, ease: 'easeOut' }}
+        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
       >
         <Suspense fallback={<PageLoader />}>
           <Routes location={location}>
@@ -81,6 +81,8 @@ export default function App() {
         <div className={loaded ? '' : 'invisible'}>
           {/* Film grain overlay */}
           <div className="film-grain" />
+          {/* Vignette */}
+          <div className="vignette" />
 
           <ScrollToTop />
           <Navbar />

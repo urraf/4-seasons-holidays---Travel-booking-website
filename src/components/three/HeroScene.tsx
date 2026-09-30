@@ -12,7 +12,7 @@ function OrbitingAirplane({ radius = 3.2, speed = 0.4, inclination = 0.3, offset
   useFrame((state) => {
     if (!planeRef.current) return;
     const t = state.clock.elapsedTime * speed + offset;
-    
+
     // Calculate orbit position
     const x = Math.cos(t) * radius;
     const z = Math.sin(t) * radius;
@@ -299,16 +299,16 @@ function Particles({ count = 200 }: { count?: number }) {
 }
 
 // Atmospheric background stars
-function StarField({ count = 350 }: { count?: number }) {
+function StarField() {
   const { theme } = useSeason();
   const starsRef = useRef<THREE.Points>(null);
 
   const [positions, colors] = useMemo(() => {
-    const pos = new Float32Array(count * 3);
-    const col = new Float32Array(count * 3);
+    const pos = new Float32Array(350 * 3);
+    const col = new Float32Array(350 * 3);
     const primaryColor = new THREE.Color(theme.primary);
 
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < 350; i++) {
       pos[i * 3] = (Math.random() - 0.5) * 40;
       pos[i * 3 + 1] = (Math.random() - 0.5) * 40;
       pos[i * 3 + 2] = (Math.random() - 0.5) * 40;
@@ -318,7 +318,7 @@ function StarField({ count = 350 }: { count?: number }) {
       col[i * 3 + 2] = primaryColor.b;
     }
     return [pos, col];
-  }, [theme.primary, count]);
+  }, [theme.primary]);
 
   useFrame((state) => {
     if (starsRef.current) {
@@ -361,86 +361,83 @@ function CameraRig() {
 }
 
 export default function HeroScene() {
-  const [dpr, setDpr] = useState(1.0);
-  const [isMobile, setIsMobile] = useState(true); // Default to mobile check to prevent SSR/hydration lag
-  const [isVisible, setIsVisible] = useState(true);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [dpr, setDpr] = useState(1.5);
   const { theme } = useSeason();
 
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768 || 'ontouchstart' in window);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-
-    const deviceDpr = window.innerWidth < 768 ? 1.0 : Math.min(window.devicePixelRatio, 1.5);
+    const deviceDpr = Math.min(window.devicePixelRatio, 2);
     setDpr(deviceDpr);
-
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  // Pause WebGL rendering when scrolled out of view on desktop
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsVisible(entry.isIntersecting);
-      },
-      { threshold: 0.1 }
-    );
-    observer.observe(containerRef.current);
-    return () => observer.disconnect();
   }, []);
 
   const fogColor = useMemo(() => new THREE.Color(theme.bg), [theme.bg]);
 
-  // Mobile Native 60 FPS Luxury Background (0% WebGL GPU Lag)
-  if (isMobile) {
-    return (
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        {/* Ambient Glowing Golden Orbs */}
-        <div
-          className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full blur-[90px] opacity-40 animate-pulse"
-          style={{ background: 'radial-gradient(circle, #d4af37 0%, rgba(6,21,45,0) 70%)' }}
+  return (
+    <div className="absolute inset-0 z-0">
+      <Canvas
+        dpr={dpr}
+        camera={{ position: [0, 1, 8.5], fov: 48 }}
+        gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
+      >
+        <ambientLight intensity={0.6} />
+        <directionalLight position={[6, 8, 6]} intensity={1.3} color={theme.primary} />
+        <pointLight position={[-5, -2, 4]} intensity={1.8} color={theme.secondary} />
+        <pointLight position={[0, 4, -2]} intensity={2.2} color={theme.accent} />
+        <CameraRig />
+
+        {/* Animated Travel Components */}
+        <TravelGlobe />
+        <FloatingCompass />
+        <HotAirBalloon position={[4.2, 1.8, -3.5]} scale={0.55} />
+        <HotAirBalloon position={[-4.0, -1.2, -5.0]} scale={0.4} />
+
+        <StarField />
+        <Particles count={200} />
+        <Environment preset="city" />
+        <fog attach="fog" args={[fogColor.getHexString(), 6, 26]} />
+      </Canvas>
+    </div>
+  );
+}
+className = "absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full blur-[90px] opacity-40 animate-pulse"
+style = {{ background: 'radial-gradient(circle, #d4af37 0%, rgba(6,21,45,0) 70%)' }}
         />
-        <div
-          className="absolute bottom-10 right-0 w-64 h-64 rounded-full blur-[80px] opacity-30"
-          style={{ background: 'radial-gradient(circle, #f5d77f 0%, rgba(6,21,45,0) 70%)' }}
+  < div
+className = "absolute bottom-10 right-0 w-64 h-64 rounded-full blur-[80px] opacity-30"
+style = {{ background: 'radial-gradient(circle, #f5d77f 0%, rgba(6,21,45,0) 70%)' }}
         />
-        {/* Subtle Decorative Celestial Rings */}
+{/* Subtle Decorative Celestial Rings */ }
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] h-[340px] rounded-full border border-[#d4af37]/15 pointer-events-none" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[480px] h-[480px] rounded-full border border-[#d4af37]/10 pointer-events-none" />
-      </div>
+      </div >
     );
   }
 
-  return (
-    <div ref={containerRef} className="absolute inset-0 z-0">
-      {isVisible && (
-        <Canvas
-          dpr={dpr}
-          camera={{ position: [0, 0.3, 6.2], fov: 50 }}
-          gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
-        >
-          <ambientLight intensity={0.6} />
-          <directionalLight position={[6, 8, 6]} intensity={1.3} color={theme.primary} />
-          <pointLight position={[-5, -2, 4]} intensity={1.8} color={theme.secondary} />
-          <pointLight position={[0, 4, -2]} intensity={2.2} color={theme.accent} />
-          <CameraRig />
-          
-          {/* Animated Travel Components */}
-          <TravelGlobe />
-          <FloatingCompass />
-          <HotAirBalloon position={[4.2, 1.8, -3.5]} scale={0.55} />
-          <HotAirBalloon position={[-4.0, -1.2, -5.0]} scale={0.4} />
+return (
+  <div ref={containerRef} className="absolute inset-0 z-0">
+    {isVisible && (
+      <Canvas
+        dpr={dpr}
+        camera={{ position: [0, 0.3, 6.2], fov: 50 }}
+        gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
+      >
+        <ambientLight intensity={0.6} />
+        <directionalLight position={[6, 8, 6]} intensity={1.3} color={theme.primary} />
+        <pointLight position={[-5, -2, 4]} intensity={1.8} color={theme.secondary} />
+        <pointLight position={[0, 4, -2]} intensity={2.2} color={theme.accent} />
+        <CameraRig />
 
-          <StarField count={350} />
-          <Particles count={200} />
-          <Environment preset="city" />
-          <fog attach="fog" args={[fogColor.getHexString(), 6, 26]} />
-        </Canvas>
-      )}
-    </div>
-  );
+        {/* Animated Travel Components */}
+        <TravelGlobe />
+        <FloatingCompass />
+        <HotAirBalloon position={[4.2, 1.8, -3.5]} scale={0.55} />
+        <HotAirBalloon position={[-4.0, -1.2, -5.0]} scale={0.4} />
+
+        <StarField count={350} />
+        <Particles count={200} />
+        <Environment preset="city" />
+        <fog attach="fog" args={[fogColor.getHexString(), 6, 26]} />
+      </Canvas>
+    )}
+  </div>
+);
 }
