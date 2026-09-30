@@ -398,10 +398,30 @@
   }
 }
 
-/* ===== RESPONSIVE ===== */
+/* ===== RESPONSIVE PERFORMANCE & MOBILE OPTIMIZATIONS ===== */
 @media (max-width: 768px) {
   :root {
     --section-padding: clamp(3rem, 8vh, 5rem);
+  }
+
+  /* Disable heavy SVG grain animation on mobile GPUs */
+  .film-grain {
+    display: none !important;
+  }
+
+  /* Reduce heavy backdrop blurs on mobile to guarantee smooth 60fps */
+  .glass-panel,
+  .glass-card,
+  .destination-card,
+  .nav-blur {
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    background: rgba(6, 21, 45, 0.92) !important;
+  }
+
+  html, body {
+    -webkit-overflow-scrolling: touch;
+    touch-action: manipulation;
   }
 
   h1 { font-size: clamp(2.2rem, 10vw, 4rem); }

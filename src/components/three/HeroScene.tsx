@@ -299,16 +299,16 @@ function Particles({ count = 200 }: { count?: number }) {
 }
 
 // Atmospheric background stars
-function StarField() {
+function StarField({ count = 350 }: { count?: number }) {
   const { theme } = useSeason();
   const starsRef = useRef<THREE.Points>(null);
 
   const [positions, colors] = useMemo(() => {
-    const pos = new Float32Array(350 * 3);
-    const col = new Float32Array(350 * 3);
+    const pos = new Float32Array(count * 3);
+    const col = new Float32Array(count * 3);
     const primaryColor = new THREE.Color(theme.primary);
 
-    for (let i = 0; i < 350; i++) {
+    for (let i = 0; i < count; i++) {
       pos[i * 3] = (Math.random() - 0.5) * 40;
       pos[i * 3 + 1] = (Math.random() - 0.5) * 40;
       pos[i * 3 + 2] = (Math.random() - 0.5) * 40;
@@ -318,7 +318,7 @@ function StarField() {
       col[i * 3 + 2] = primaryColor.b;
     }
     return [pos, col];
-  }, [theme.primary]);
+  }, [theme.primary, count]);
 
   useFrame((state) => {
     if (starsRef.current) {
@@ -361,12 +361,15 @@ function CameraRig() {
 }
 
 export default function HeroScene() {
-  const [dpr, setDpr] = useState(1.5);
+  const [dpr, setDpr] = useState(1.0);
+  const [isMobile, setIsMobile] = useState(false);
   const { theme } = useSeason();
 
   useEffect(() => {
-    const deviceDpr = Math.min(window.devicePixelRatio, 2);
-    setDpr(deviceDpr);
+    const mobile = window.innerWidth < 768;
+    setIsMobile(mobile);
+    const targetDpr = mobile ? 1.0 : Math.min(window.devicePixelRatio, 1.5);
+    setDpr(targetDpr);
   }, []);
 
   const fogColor = useMemo(() => new THREE.Color(theme.bg), [theme.bg]);
@@ -376,13 +379,13 @@ export default function HeroScene() {
       <Canvas
         dpr={dpr}
         camera={{ position: [0, 0.3, 6.2], fov: 50 }}
-        gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
+        gl={{ antialias: !isMobile, alpha: true, powerPreference: 'high-performance' }}
       >
         <ambientLight intensity={0.6} />
         <directionalLight position={[6, 8, 6]} intensity={1.3} color={theme.primary} />
         <pointLight position={[-5, -2, 4]} intensity={1.8} color={theme.secondary} />
         <pointLight position={[0, 4, -2]} intensity={2.2} color={theme.accent} />
-        <CameraRig />
+        {!isMobile && <CameraRig />}
         
         {/* Animated Travel Components */}
         <TravelGlobe />
@@ -390,8 +393,8 @@ export default function HeroScene() {
         <HotAirBalloon position={[4.2, 1.8, -3.5]} scale={0.55} />
         <HotAirBalloon position={[-4.0, -1.2, -5.0]} scale={0.4} />
 
-        <StarField />
-        <Particles count={200} />
+        <StarField count={isMobile ? 100 : 350} />
+        <Particles count={isMobile ? 40 : 200} />
         <Environment preset="city" />
         <fog attach="fog" args={[fogColor.getHexString(), 6, 26]} />
       </Canvas>

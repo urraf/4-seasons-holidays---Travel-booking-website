@@ -26,11 +26,11 @@ export const destinations: Destination[] = [
     season: 'spring',
     tagline: 'Kashmiri Jashn-e-Bahaar — Royal Shikara & Tulip Sojourn',
     description: 'Watch the Kashmir valley burst into bloom as almond blossoms and Asia\'s largest Tulip Garden paint Srinagar in vivid hues. Glide across mirror-still Dal Lake on private hand-carved shikaras, walk through lush Mughal gardens, and ride horses through green Baisaran valley meadows in Pahalgam.',
-    image: 'https://images.unsplash.com/photo-1597074866923-dc0589150458?w=1200&q=80',
+    image: 'https://images.unsplash.com/photo-1566837945700-30057527ade0?w=1200&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1597074866923-dc0589150458?w=800&q=80',
       'https://images.unsplash.com/photo-1566837945700-30057527ade0?w=800&q=80',
       'https://images.unsplash.com/photo-1595815771614-ade9d652a65d?w=800&q=80',
+      'https://images.unsplash.com/photo-1597074866923-dc0589150458?w=800&q=80',
     ],
     highlights: ['Dal Lake Royal Shikara Ride', 'Srinagar Tulip Garden Festival', 'Mughal Gardens Nishat & Shalimar', 'Pahalgam & Betaab Valley Meadow'],
     bestMonths: ['March', 'April', 'May', 'June', 'July', 'August'],

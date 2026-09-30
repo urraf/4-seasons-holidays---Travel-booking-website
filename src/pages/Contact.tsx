@@ -143,16 +143,16 @@ export default function Contact() {
               <div className="h-0.5 bg-gradient-to-r from-transparent via-[#d4af37] to-transparent w-16 md:w-28" />
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-3 md:gap-6 text-xl md:text-3xl font-serif font-bold text-[#d4af37] mb-4">
-              <a href="tel:8384080652" className="flex items-center gap-2 hover:scale-105 transition-transform text-[#d4af37]">
-                <Phone className="w-5 h-5 md:w-7 md:h-7 p-1 rounded-full bg-[#d4af37] text-[#06152d]" />
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-6 text-base sm:text-2xl md:text-3xl font-mono font-bold text-[#d4af37] mb-4">
+              <a href="tel:8384080652" className="flex items-center gap-1.5 hover:scale-105 transition-transform text-[#d4af37]">
+                <Phone className="w-4 h-4 md:w-6 md:h-6 p-1 rounded-full bg-[#d4af37] text-[#06152d]" />
                 <span>8384080652</span>
               </a>
-              <span className="text-[#d4af37]/40 hidden md:inline">|</span>
+              <span className="text-[#d4af37]/40 hidden sm:inline">|</span>
               <a href="tel:9315900730" className="hover:scale-105 transition-transform text-[#d4af37]">
                 9315900730
               </a>
-              <span className="text-[#d4af37]/40 hidden md:inline">|</span>
+              <span className="text-[#d4af37]/40 hidden sm:inline">|</span>
               <a href="tel:8700524632" className="hover:scale-105 transition-transform text-[#d4af37]">
                 8700524632
               </a>
@@ -203,33 +203,44 @@ export default function Contact() {
           </div>
 
           {/* Form Steps */}
-          <div className="glass-panel p-8 md:p-10 rounded-3xl border border-white/10 shadow-2xl">
+          <div className="glass-panel p-4 sm:p-8 md:p-10 rounded-3xl border border-white/10 shadow-2xl">
             <AnimatePresence mode="wait">
               {/* Step 0: Destination */}
               {currentStep === 0 && (
                 <motion.div key="dest" variants={stepVariants} initial="enter" animate="center" exit="exit">
-                  <div className="flex items-center gap-2 mb-6">
-                    <MapPin className="w-5 h-5" style={{ color: theme.primary }} />
-                    <h3 className="font-display text-xl" style={{ color: theme.text }}>Where do you want to go?</h3>
+                  <div className="flex items-center gap-2 mb-4 sm:mb-6">
+                    <MapPin className="w-5 h-5 text-[#d4af37]" />
+                    <h3 className="font-display text-xl text-white">Where do you want to go?</h3>
                   </div>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-[400px] overflow-y-auto">
-                    {destinations.map((d) => (
-                      <button
-                        key={d.id}
-                        onClick={() => updateForm('destination', d.name)}
-                        className="relative overflow-hidden rounded-xl aspect-[3/2] group"
-                        style={{ border: form.destination === d.name ? `2px solid ${theme.primary}` : '2px solid transparent' }}
-                      >
-                        <img src={d.image} alt={d.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" loading="lazy" />
-                        <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors" />
-                        <span className="absolute bottom-2 left-3 text-white text-sm font-medium">{d.name}</span>
-                        {form.destination === d.name && (
-                          <div className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center" style={{ background: theme.primary }}>
-                            <Check className="w-4 h-4 text-white" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 max-h-[420px] overflow-y-auto pr-1">
+                    {destinations.map((d) => {
+                      const isSelected = form.destination === d.name;
+                      return (
+                        <button
+                          key={d.id}
+                          type="button"
+                          onClick={() => updateForm('destination', d.name)}
+                          className={`relative overflow-hidden rounded-2xl p-3 flex items-center gap-3 transition-all cursor-pointer text-left ${
+                            isSelected
+                              ? 'bg-[#d4af37]/20 border-2 border-[#d4af37] shadow-[0_0_20px_rgba(212,175,55,0.4)]'
+                              : 'bg-white/5 border border-white/10 hover:bg-white/10'
+                          }`}
+                        >
+                          <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden flex-shrink-0 border border-white/10">
+                            <img src={d.image} alt={d.name} className="w-full h-full object-cover" loading="lazy" />
                           </div>
-                        )}
-                      </button>
-                    ))}
+                          <div className="flex-1 min-w-0">
+                            <span className="font-semibold text-white text-xs sm:text-sm block truncate">{d.name}</span>
+                            <span className="text-[0.65rem] text-[#d4af37] font-semibold uppercase tracking-wider block mt-0.5">{d.season} Season</span>
+                          </div>
+                          {isSelected && (
+                            <div className="w-5 h-5 rounded-full bg-[#d4af37] text-[#06152d] flex items-center justify-center flex-shrink-0">
+                              <Check className="w-3.5 h-3.5 stroke-[3]" />
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                   {errors.destination && <p className="text-red-500 text-sm mt-2">{errors.destination}</p>}
                 </motion.div>
