@@ -13,14 +13,12 @@ function OrbitingAirplane({ radius = 3.2, speed = 0.4, inclination = 0.3, offset
     if (!planeRef.current) return;
     const t = state.clock.elapsedTime * speed + offset;
 
-    // Calculate orbit position
     const x = Math.cos(t) * radius;
     const z = Math.sin(t) * radius;
     const y = Math.sin(t * 2) * inclination;
 
     planeRef.current.position.set(x, y, z);
 
-    // Tangent direction for smooth rotation facing forward
     const nextX = Math.cos(t + 0.05) * radius;
     const nextZ = Math.sin(t + 0.05) * radius;
     const nextY = Math.sin((t + 0.05) * 2) * inclination;
@@ -30,23 +28,97 @@ function OrbitingAirplane({ radius = 3.2, speed = 0.4, inclination = 0.3, offset
 
   return (
     <group ref={planeRef}>
-      {/* Fuselage */}
       <mesh rotation={[Math.PI / 2, 0, 0]}>
         <coneGeometry args={[0.08, 0.45, 8]} />
         <meshStandardMaterial color={theme.primary} roughness={0.2} metalness={0.8} emissive={theme.primary} emissiveIntensity={0.5} />
       </mesh>
-      {/* Wings */}
       <mesh position={[0, 0, -0.05]}>
         <boxGeometry args={[0.6, 0.02, 0.12]} />
         <meshStandardMaterial color="#ffffff" roughness={0.1} metalness={0.9} />
       </mesh>
-      {/* Tail Fin */}
       <mesh position={[0, 0.08, -0.18]} rotation={[0.4, 0, 0]}>
         <boxGeometry args={[0.02, 0.12, 0.08]} />
         <meshStandardMaterial color={theme.accent} emissive={theme.accent} emissiveIntensity={0.6} />
       </mesh>
-      {/* Jet Engine Glow Light */}
       <pointLight position={[0, 0, -0.25]} intensity={1.5} color={theme.primary} distance={1.5} />
+    </group>
+  );
+}
+
+// 3D Nature: Pine Trees & Alpine Foliage
+function PineTree({ position, scale = 1 }: { position: [number, number, number]; scale?: number }) {
+  const { theme } = useSeason();
+  return (
+    <group position={position} scale={scale}>
+      {/* Trunk */}
+      <mesh position={[0, 0.2, 0]}>
+        <cylinderGeometry args={[0.04, 0.07, 0.4, 6]} />
+        <meshStandardMaterial color="#3d2314" roughness={0.9} />
+      </mesh>
+      {/* Foliage Tier 1 */}
+      <mesh position={[0, 0.5, 0]}>
+        <coneGeometry args={[0.25, 0.4, 6]} />
+        <meshStandardMaterial color={theme.primary} roughness={0.6} />
+      </mesh>
+      {/* Foliage Tier 2 */}
+      <mesh position={[0, 0.75, 0]}>
+        <coneGeometry args={[0.2, 0.35, 6]} />
+        <meshStandardMaterial color={theme.secondary} roughness={0.5} />
+      </mesh>
+      {/* Foliage Tier 3 */}
+      <mesh position={[0, 0.95, 0]}>
+        <coneGeometry args={[0.14, 0.3, 6]} />
+        <meshStandardMaterial color={theme.accent} roughness={0.4} />
+      </mesh>
+    </group>
+  );
+}
+
+// 3D Nature: Low-Poly Snow-Capped Mountain Peak
+function MountainPeak({ position, scale = 1, rotationY = 0 }: { position: [number, number, number]; scale?: number; rotationY?: number }) {
+  const { theme } = useSeason();
+  return (
+    <group position={position} scale={scale} rotation={[0, rotationY, 0]}>
+      {/* Mountain Base */}
+      <mesh position={[0, 1, 0]}>
+        <coneGeometry args={[1.4, 2.2, 5]} />
+        <meshStandardMaterial color="#1e293b" roughness={0.8} />
+      </mesh>
+      {/* Snow Cap */}
+      <mesh position={[0, 1.7, 0]}>
+        <coneGeometry args={[0.55, 0.8, 5]} />
+        <meshStandardMaterial color="#f8fafc" roughness={0.2} metalness={0.1} emissive={theme.accent} emissiveIntensity={0.15} />
+      </mesh>
+      {/* Trees at mountain base */}
+      <PineTree position={[-0.6, 0, 0.5]} scale={0.6} />
+      <PineTree position={[0.5, 0, 0.6]} scale={0.7} />
+      <PineTree position={[0, 0, 0.8]} scale={0.5} />
+    </group>
+  );
+}
+
+// 3D Nature: Drifting Clouds
+function FloatingCloud({ position = [0, 0, 0], scale = 1 }: { position?: [number, number, number]; scale?: number }) {
+  const cloudRef = useRef<THREE.Group>(null);
+  useFrame((state) => {
+    if (!cloudRef.current) return;
+    cloudRef.current.position.x = position[0] + Math.sin(state.clock.elapsedTime * 0.2 + position[1]) * 0.4;
+  });
+
+  return (
+    <group ref={cloudRef} position={position} scale={scale}>
+      <mesh position={[0, 0, 0]}>
+        <sphereGeometry args={[0.45, 12, 12]} />
+        <meshStandardMaterial color="#ffffff" transparent opacity={0.75} roughness={0.1} />
+      </mesh>
+      <mesh position={[0.3, 0.05, 0.1]}>
+        <sphereGeometry args={[0.35, 12, 12]} />
+        <meshStandardMaterial color="#ffffff" transparent opacity={0.7} roughness={0.1} />
+      </mesh>
+      <mesh position={[-0.3, -0.05, -0.1]}>
+        <sphereGeometry args={[0.32, 12, 12]} />
+        <meshStandardMaterial color="#ffffff" transparent opacity={0.7} roughness={0.1} />
+      </mesh>
     </group>
   );
 }
@@ -57,14 +129,12 @@ function TravelGlobe() {
   const latitudeLinesRef = useRef<THREE.Group>(null);
   const { theme } = useSeason();
 
-  // Generate Flight Arcs
   const flightArcs = useMemo(() => {
     const arcs: THREE.Vector3[][] = [];
-    const numArcs = 6;
+    const numArcs = 5;
     const radius = 2.6;
 
     for (let i = 0; i < numArcs; i++) {
-      // Pick random start and end points on sphere
       const phi1 = Math.random() * Math.PI * 2;
       const theta1 = (Math.random() - 0.5) * Math.PI * 0.8;
       const start = new THREE.Vector3().setFromSphericalCoords(radius, theta1 + Math.PI / 2, phi1);
@@ -73,12 +143,11 @@ function TravelGlobe() {
       const theta2 = (Math.random() - 0.5) * Math.PI * 0.8;
       const end = new THREE.Vector3().setFromSphericalCoords(radius, theta2 + Math.PI / 2, phi2);
 
-      // Mid control point pulled outward to form curved flight trajectory arc
       const mid = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.7);
       mid.normalize().multiplyScalar(radius * 1.45);
 
       const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
-      arcs.push(curve.getPoints(40));
+      arcs.push(curve.getPoints(30));
     }
     return arcs;
   }, []);
@@ -97,7 +166,7 @@ function TravelGlobe() {
       <group position={[0, -0.4, 0]} ref={globeGroupRef}>
         {/* Core Ocean Sphere */}
         <mesh>
-          <sphereGeometry args={[2.5, 48, 48]} />
+          <sphereGeometry args={[2.5, 36, 36]} />
           <meshStandardMaterial
             color={theme.skyTop}
             roughness={0.3}
@@ -111,7 +180,7 @@ function TravelGlobe() {
 
         {/* Continents / Wireframe Terrain Grid */}
         <mesh>
-          <icosahedronGeometry args={[2.53, 3]} />
+          <icosahedronGeometry args={[2.53, 2]} />
           <meshStandardMaterial
             color={theme.secondary}
             wireframe
@@ -126,7 +195,7 @@ function TravelGlobe() {
         <group ref={latitudeLinesRef}>
           {[-1.2, -0.6, 0, 0.6, 1.2].map((y, idx) => (
             <mesh key={idx} position={[0, y, 0]} rotation={[Math.PI / 2, 0, 0]}>
-              <torusGeometry args={[Math.sqrt(Math.max(0, 2.58 * 2.58 - y * y)), 0.01, 16, 64]} />
+              <torusGeometry args={[Math.sqrt(Math.max(0, 2.58 * 2.58 - y * y)), 0.01, 12, 48]} />
               <meshBasicMaterial color={theme.primary} transparent opacity={0.25} />
             </mesh>
           ))}
@@ -152,7 +221,7 @@ function TravelGlobe() {
 
         {/* External Radar Ring */}
         <mesh rotation={[Math.PI / 3, Math.PI / 6, 0]}>
-          <torusGeometry args={[4.2, 0.015, 16, 120]} />
+          <torusGeometry args={[4.2, 0.015, 12, 80]} />
           <meshBasicMaterial color={theme.primary} transparent opacity={0.5} />
         </mesh>
       </group>
@@ -176,24 +245,19 @@ function FloatingCompass() {
 
   return (
     <group ref={compassRef} position={[-4.5, 2.2, -3]} rotation={[0.4, 0.5, 0]}>
-      {/* Outer Dial Ring */}
       <mesh>
-        <torusGeometry args={[1.2, 0.02, 16, 64]} />
+        <torusGeometry args={[1.2, 0.02, 12, 48]} />
         <meshBasicMaterial color={theme.primary} transparent opacity={0.6} />
       </mesh>
-      {/* Inner Ticks */}
       <mesh>
-        <torusGeometry args={[1.0, 0.01, 16, 64]} />
+        <torusGeometry args={[1.0, 0.01, 12, 48]} />
         <meshBasicMaterial color={theme.accent} transparent opacity={0.4} />
       </mesh>
-      {/* Animated Compass Needle */}
       <group ref={needleRef}>
-        {/* North Pointer (Neon Primary) */}
         <mesh position={[0, 0.5, 0]} rotation={[0, 0, 0]}>
           <coneGeometry args={[0.08, 0.9, 4]} />
           <meshBasicMaterial color={theme.primary} transparent opacity={0.9} />
         </mesh>
-        {/* South Pointer (Secondary Accent) */}
         <mesh position={[0, -0.5, 0]} rotation={[0, 0, Math.PI]}>
           <coneGeometry args={[0.08, 0.9, 4]} />
           <meshBasicMaterial color={theme.secondary} transparent opacity={0.6} />
@@ -216,9 +280,8 @@ function HotAirBalloon({ position = [4.5, 1.5, -4], scale = 0.6 }) {
 
   return (
     <group ref={balloonRef} position={position as [number, number, number]} scale={scale}>
-      {/* Balloon Envelope */}
       <mesh position={[0, 1.2, 0]}>
-        <sphereGeometry args={[1.1, 24, 24]} />
+        <sphereGeometry args={[1.1, 20, 20]} />
         <meshStandardMaterial
           color={theme.primary}
           roughness={0.3}
@@ -227,19 +290,17 @@ function HotAirBalloon({ position = [4.5, 1.5, -4], scale = 0.6 }) {
           emissiveIntensity={0.3}
         />
       </mesh>
-      {/* Basket */}
       <mesh position={[0, -0.4, 0]}>
         <boxGeometry args={[0.35, 0.3, 0.35]} />
         <meshStandardMaterial color="#332211" roughness={0.8} />
       </mesh>
-      {/* Basket Burner Glow Light */}
       <pointLight position={[0, -0.1, 0]} intensity={1.5} color={theme.accent} distance={2} />
     </group>
   );
 }
 
-// Floating seasonal particles (petals/leaves/snow/dust)
-function Particles({ count = 200 }: { count?: number }) {
+// Floating seasonal particles
+function Particles({ count = 120 }: { count?: number }) {
   const mesh = useRef<THREE.InstancedMesh>(null);
   const { theme, progress } = useSeason();
 
@@ -299,16 +360,16 @@ function Particles({ count = 200 }: { count?: number }) {
 }
 
 // Atmospheric background stars
-function StarField() {
+function StarField({ count = 200 }: { count?: number }) {
   const { theme } = useSeason();
   const starsRef = useRef<THREE.Points>(null);
 
   const [positions, colors] = useMemo(() => {
-    const pos = new Float32Array(350 * 3);
-    const col = new Float32Array(350 * 3);
+    const pos = new Float32Array(count * 3);
+    const col = new Float32Array(count * 3);
     const primaryColor = new THREE.Color(theme.primary);
 
-    for (let i = 0; i < 350; i++) {
+    for (let i = 0; i < count; i++) {
       pos[i * 3] = (Math.random() - 0.5) * 40;
       pos[i * 3 + 1] = (Math.random() - 0.5) * 40;
       pos[i * 3 + 2] = (Math.random() - 0.5) * 40;
@@ -318,7 +379,7 @@ function StarField() {
       col[i * 3 + 2] = primaryColor.b;
     }
     return [pos, col];
-  }, [theme.primary]);
+  }, [theme.primary, count]);
 
   useFrame((state) => {
     if (starsRef.current) {
@@ -352,8 +413,8 @@ function CameraRig() {
   }, []);
 
   useFrame(() => {
-    camera.position.x += (mouseRef.current.x * 0.7 - camera.position.x) * 0.03;
-    camera.position.y += (-mouseRef.current.y * 0.5 + 1 - camera.position.y) * 0.03;
+    camera.position.x += (mouseRef.current.x * 0.5 - camera.position.x) * 0.03;
+    camera.position.y += (-mouseRef.current.y * 0.3 + 0.3 - camera.position.y) * 0.03;
     camera.lookAt(0, 0, 0);
   });
 
@@ -361,83 +422,72 @@ function CameraRig() {
 }
 
 export default function HeroScene() {
-  const [dpr, setDpr] = useState(1.5);
+  const [dpr, setDpr] = useState(1.0);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null);
   const { theme } = useSeason();
 
   useEffect(() => {
-    const deviceDpr = Math.min(window.devicePixelRatio, 2);
-    setDpr(deviceDpr);
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    const targetDpr = window.innerWidth < 768 ? 1.0 : Math.min(window.devicePixelRatio, 1.25);
+    setDpr(targetDpr);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
+      },
+      { threshold: 0.05 }
+    );
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
   }, []);
 
   const fogColor = useMemo(() => new THREE.Color(theme.bg), [theme.bg]);
 
   return (
-    <div className="absolute inset-0 z-0">
-      <Canvas
-        dpr={dpr}
-        camera={{ position: [0, 1, 8.5], fov: 48 }}
-        gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
-      >
-        <ambientLight intensity={0.6} />
-        <directionalLight position={[6, 8, 6]} intensity={1.3} color={theme.primary} />
-        <pointLight position={[-5, -2, 4]} intensity={1.8} color={theme.secondary} />
-        <pointLight position={[0, 4, -2]} intensity={2.2} color={theme.accent} />
-        <CameraRig />
+    <div ref={containerRef} className="absolute inset-0 z-0">
+      {isVisible && (
+        <Canvas
+          dpr={dpr}
+          camera={{ position: [0, 0.3, 6.2], fov: 50 }}
+          gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
+        >
+          <ambientLight intensity={0.6} />
+          <directionalLight position={[6, 8, 6]} intensity={1.3} color={theme.primary} />
+          <pointLight position={[-5, -2, 4]} intensity={1.8} color={theme.secondary} />
+          <pointLight position={[0, 4, -2]} intensity={2.2} color={theme.accent} />
+          {!isMobile && <CameraRig />}
 
-        {/* Animated Travel Components */}
-        <TravelGlobe />
-        <FloatingCompass />
-        <HotAirBalloon position={[4.2, 1.8, -3.5]} scale={0.55} />
-        <HotAirBalloon position={[-4.0, -1.2, -5.0]} scale={0.4} />
+          {/* 3D Nature Elements: Mountains, Pine Trees & Clouds */}
+          <MountainPeak position={[-4.2, -1.8, -2.5]} scale={0.9} rotationY={0.4} />
+          <MountainPeak position={[4.0, -1.9, -2.8]} scale={0.85} rotationY={-0.5} />
+          <MountainPeak position={[-5.8, -2.2, -4.5]} scale={1.2} rotationY={0.2} />
 
-        <StarField />
-        <Particles count={200} />
-        <Environment preset="city" />
-        <fog attach="fog" args={[fogColor.getHexString(), 6, 26]} />
-      </Canvas>
+          <FloatingCloud position={[-3.2, 2.2, -2.0]} scale={1.1} />
+          <FloatingCloud position={[3.5, 2.5, -2.5]} scale={1.0} />
+          <FloatingCloud position={[0.5, 2.8, -3.5]} scale={1.3} />
+
+          {/* 3D Travel Globe & Orbiting Airplanes */}
+          <TravelGlobe />
+          <FloatingCompass />
+          <HotAirBalloon position={[4.2, 1.8, -3.5]} scale={0.55} />
+          <HotAirBalloon position={[-4.0, -1.2, -5.0]} scale={0.4} />
+
+          <StarField count={isMobile ? 120 : 250} />
+          <Particles count={isMobile ? 50 : 140} />
+          <Environment preset="city" />
+          <fog attach="fog" args={[fogColor.getHexString(), 6, 26]} />
+        </Canvas>
+      )}
     </div>
   );
-}
-className = "absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full blur-[90px] opacity-40 animate-pulse"
-style = {{ background: 'radial-gradient(circle, #d4af37 0%, rgba(6,21,45,0) 70%)' }}
-        />
-  < div
-className = "absolute bottom-10 right-0 w-64 h-64 rounded-full blur-[80px] opacity-30"
-style = {{ background: 'radial-gradient(circle, #f5d77f 0%, rgba(6,21,45,0) 70%)' }}
-        />
-{/* Subtle Decorative Celestial Rings */ }
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] h-[340px] rounded-full border border-[#d4af37]/15 pointer-events-none" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[480px] h-[480px] rounded-full border border-[#d4af37]/10 pointer-events-none" />
-      </div >
-    );
-  }
-
-return (
-  <div ref={containerRef} className="absolute inset-0 z-0">
-    {isVisible && (
-      <Canvas
-        dpr={dpr}
-        camera={{ position: [0, 0.3, 6.2], fov: 50 }}
-        gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
-      >
-        <ambientLight intensity={0.6} />
-        <directionalLight position={[6, 8, 6]} intensity={1.3} color={theme.primary} />
-        <pointLight position={[-5, -2, 4]} intensity={1.8} color={theme.secondary} />
-        <pointLight position={[0, 4, -2]} intensity={2.2} color={theme.accent} />
-        <CameraRig />
-
-        {/* Animated Travel Components */}
-        <TravelGlobe />
-        <FloatingCompass />
-        <HotAirBalloon position={[4.2, 1.8, -3.5]} scale={0.55} />
-        <HotAirBalloon position={[-4.0, -1.2, -5.0]} scale={0.4} />
-
-        <StarField count={350} />
-        <Particles count={200} />
-        <Environment preset="city" />
-        <fog attach="fog" args={[fogColor.getHexString(), 6, 26]} />
-      </Canvas>
-    )}
-  </div>
-);
 }
